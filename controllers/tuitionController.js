@@ -295,3 +295,189 @@ export const rejectTuition = async (req, res) => {
     });
   }
 };
+
+// PATCH: Tutor updates their own tuition
+export const updateMyTuition = async (req, res) => {
+  try {
+    const db = getDB();
+    const { id } = req.params;
+    const tutor = req.dbUser;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid tuition ID.",
+      });
+    }
+
+    const {
+      title,
+      subject,
+      classLevel,
+      mode,
+      location,
+      monthlyFee,
+      daysPerWeek,
+      bannerImage,
+      description,
+    } = req.body;
+
+    if (
+      typeof title !== "string" || !title.trim() ||
+      typeof subject !== "string" || !subject.trim() ||
+      typeof classLevel !== "string" || !classLevel.trim() ||
+      !["Online", "Offline"].includes(mode) ||
+      typeof location !== "string" || !location.trim() ||
+      typeof description !== "string" || !description.trim() ||
+      !Number.isFinite(Number(monthlyFee)) ||
+      Number(monthlyFee) <= 0 ||
+      !Number.isInteger(Number(daysPerWeek)) ||
+      Number(daysPerWeek) < 1 ||
+      Number(daysPerWeek) > 7 ||
+      (bannerImage !== undefined && typeof bannerImage !== "string")
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide valid tuition details.",
+      });
+    }
+
+    const result = await db.collection("tuitions").updateOne(
+      {
+        _id: new ObjectId(id),
+        tutorEmail: tutor.email,
+      },
+      {
+        $set: {
+          title: title.trim(),
+          subject: subject.trim(),
+          classLevel: classLevel.trim(),
+          mode,
+          location: location.trim(),
+          monthlyFee: Number(monthlyFee),
+          daysPerWeek: Number(daysPerWeek),
+          bannerImage: bannerImage?.trim() || "",
+          description: description.trim(),
+          updatedAt: new Date(),
+        },
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Tuition not found or you do not own this tuition.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Tuition updated successfully.",
+    });
+  } catch (error) {
+    console.error("Update tuition error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update tuition.",
+    });
+  }
+};
+
+// DELETE: Tutor deletes their own tuition
+export const deleteMyTuition = async (req, res) => {
+  try {
+    const db = getDB();
+    const { id } = req.params;
+    const tutor = req.dbUser;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid tuition ID.",
+      });
+    }
+
+    const result = await db.collection("tuitions").deleteOne({
+      _id: new ObjectId(id),
+      tutorEmail: tutor.email,
+    });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Tuition not found or you do not own this tuition.",
+      });
+    }
+
+    // Delete applications connected to this tuition
+    await db.collection("applications").deleteMany({
+      tuitionId: id,
+      tutorEmail: tutor.email,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Tuition deleted successfully.",
+    });
+  } catch (error) {
+    console.error("Delete tuition error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete tuition.",
+    });
+  }
+};
+
+// PATCH: Tutor activates or closes their own tuition
+export const toggleMyTuitionStatus = async (req, res) => {
+  try {
+    const db = getDB();
+    const { id } = req.params;
+    const { isActive } = req.body;
+    const tutor = req.dbUser;
+
+    if (!ObjectId.isValid(id) || typeof isActive !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request.",
+      });
+    }
+
+    const result = await db.collection("tuitions").updateOne(
+      {
+        _id: new ObjectId(id),
+        tutorEmail: tutor.email,
+        approvalStatus: "approved",
+      },
+      {
+        $set: {
+          isActive,
+          updatedAt: new Date(),
+        },
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Approved tuition not found or you do not own it.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: isActive
+        ? "Tuition activated successfully."
+        : "Tuition closed successfully.",
+    });
+  } catch (error) {
+    console.error("Toggle tuition status error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update tuition status.",
+    });
+  }
+};

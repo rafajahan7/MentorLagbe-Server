@@ -8,6 +8,7 @@ import verifyRole from "./middleware/verifyRole.js";
 import verifyUser from "./middleware/verifyUser.js";
 import tuitionRoutes from "./routes/tuitionRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -83,12 +84,22 @@ app.get(
 
 app.use("/api/tuitions", tuitionRoutes);
 app.use("/api/applications", applicationRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/api/protected", verifyToken, (req, res) => {
   res.status(200).json({
     success: true,
     message: "JWT verified! You accessed a protected API.",
     user: req.user,
+  });
+});
+
+app.use((err, req, res, next) => {
+  console.error("Server Error:", err);
+
+  res.status(500).json({
+    success: false,
+    message: "Internal server error.",
   });
 });
 
