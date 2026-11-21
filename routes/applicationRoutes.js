@@ -7,6 +7,7 @@ import {
   getStudentApplications,
   acceptApplication,
   rejectApplication,
+  cancelApplication,
 } from "../controllers/applicationController.js";
 
 import verifyToken from "../middleware/verifyToken.js";
@@ -40,6 +41,15 @@ router.get(
   verifyUser,
   verifyRole("student"),
   getStudentApplications
+);
+
+// Student cancels their own pending application
+router.delete(
+  "/:id",
+  verifyToken,
+  verifyUser,
+  verifyRole("student"),
+  cancelApplication
 );
 
 // Tutor accepts an application

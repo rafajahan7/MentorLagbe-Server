@@ -287,3 +287,47 @@ export const getStudentApplications = async (req, res) => {
     });
   }
 };
+
+
+// DELETE: Student cancels their own pending application
+export const cancelApplication = async (req, res) => {
+  try {
+    const db = getDB();
+    const { id } = req.params;
+    const student = req.dbUser;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid application ID.",
+      });
+    }
+
+    const result = await db.collection("applications").deleteOne({
+      _id: new ObjectId(id),
+      studentEmail: student.email,
+      status: "pending",
+    });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Pending application not found or you do not own it.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Application cancelled successfully.",
+    });
+  } catch (error) {
+    console.error("Cancel application error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to cancel application.",
+    });
+  }
+};
+
