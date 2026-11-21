@@ -445,19 +445,7 @@ export const toggleMyTuitionStatus = async (req, res) => {
       });
     }
 
-    const result = await db.collection("tuitions").updateOne(
-      {
-        _id: new ObjectId(id),
-        tutorEmail: tutor.email,
-        approvalStatus: "approved",
-      },
-      {
-        $set: {
-          isActive,
-          updatedAt: new Date(),
-        },
-      }
-    );
+  
 
     if (result.matchedCount === 0) {
       return res.status(404).json({
