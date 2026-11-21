@@ -12,7 +12,8 @@ import {
 
 import verifyToken from "../middleware/verifyToken.js";
 import verifyUser from "../middleware/verifyUser.js";
-import verifyRole from "../middleware/verifyRole.js";
+import verifyStudent from "../middleware/verifyStudent.js";
+import verifyTutor from "../middleware/verifyTutor.js";
 
 const router = express.Router();
 
@@ -21,7 +22,7 @@ router.post(
   "/:tuitionId",
   verifyToken,
   verifyUser,
-  verifyRole("student"),
+  verifyStudent,
   createApplication
 );
 
@@ -30,7 +31,7 @@ router.get(
   "/tutor",
   verifyToken,
   verifyUser,
-  verifyRole("tutor"),
+  verifyTutor,
   getTutorApplications
 );
 
@@ -39,7 +40,7 @@ router.get(
   "/student",
   verifyToken,
   verifyUser,
-  verifyRole("student"),
+  verifyStudent,
   getStudentApplications
 );
 
@@ -48,7 +49,7 @@ router.delete(
   "/:id",
   verifyToken,
   verifyUser,
-  verifyRole("student"),
+  verifyStudent,
   cancelApplication
 );
 
@@ -57,7 +58,7 @@ router.patch(
   "/:id/accept",
   verifyToken,
   verifyUser,
-  verifyRole("tutor"),
+  verifyTutor,
   acceptApplication
 );
 
@@ -66,7 +67,7 @@ router.patch(
   "/:id/reject",
   verifyToken,
   verifyUser,
-  verifyRole("tutor"),
+  verifyTutor,
   rejectApplication
 );
 

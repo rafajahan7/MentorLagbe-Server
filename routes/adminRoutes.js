@@ -9,12 +9,12 @@ import {
 
 import verifyToken from "../middleware/verifyToken.js";
 import verifyUser from "../middleware/verifyUser.js";
-import verifyRole from "../middleware/verifyRole.js";
+import verifyAdmin from "../middleware/verifyAdmin.js";
 
 const router = express.Router();
 
 // All routes require admin authentication
-router.use(verifyToken, verifyUser, verifyRole("admin"));
+router.use(verifyToken, verifyUser, verifyAdmin);
 
 // GET: All users
 router.get("/users", getAllUsers);

@@ -3,9 +3,13 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import { connectDB } from "./config/db.js";
+
 import verifyToken from "./middleware/verifyToken.js";
-import verifyRole from "./middleware/verifyRole.js";
 import verifyUser from "./middleware/verifyUser.js";
+import verifyStudent from "./middleware/verifyStudent.js";
+import verifyTutor from "./middleware/verifyTutor.js";
+import verifyAdmin from "./middleware/verifyAdmin.js";
+
 import tuitionRoutes from "./routes/tuitionRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
@@ -40,7 +44,7 @@ app.get(
   "/api/test/student",
   verifyToken,
   verifyUser,
-  verifyRole("student"),
+  verifyStudent,
   (req, res) => {
     res.json({
       success: true,
@@ -59,7 +63,7 @@ app.get(
   "/api/test/tutor",
   verifyToken,
   verifyUser,
-  verifyRole("tutor"),
+  verifyTutor,
   (req, res) => {
     res.json({
       success: true,
@@ -73,7 +77,7 @@ app.get(
   "/api/test/admin",
   verifyToken,
   verifyUser,
-  verifyRole("admin"),
+  verifyAdmin,
   (req, res) => {
     res.json({
       success: true,
@@ -82,10 +86,12 @@ app.get(
   }
 );
 
+// API routes
 app.use("/api/tuitions", tuitionRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/admin", adminRoutes);
 
+// General protected route
 app.get("/api/protected", verifyToken, (req, res) => {
   res.status(200).json({
     success: true,
@@ -94,6 +100,7 @@ app.get("/api/protected", verifyToken, (req, res) => {
   });
 });
 
+// Global error handler
 app.use((err, req, res, next) => {
   console.error("Server Error:", err);
 
