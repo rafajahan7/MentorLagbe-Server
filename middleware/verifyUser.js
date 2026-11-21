@@ -15,14 +15,7 @@ const verifyUser = async (req, res, next) => {
     const db = getDB();
 
     // Find the current user in MongoDB
-    const user = await db.collection("users").findOne({ email });
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "User account not found.",
-      });
-    }
 
     // Attach current database user information
     req.dbUser = user;
