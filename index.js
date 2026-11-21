@@ -103,12 +103,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-const startServer = async () => {
-  await connectDB();
+await connectDB();
 
+if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`MentorLagbe server running on port ${PORT}`);
   });
-};
+}
 
-startServer();
+export default app;
