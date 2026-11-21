@@ -180,6 +180,8 @@ export const createTuition = async (req, res) => {
       .collection("tuitions")
       .insertOne(newTuition);
 
+  
+
     return res.status(201).json({
       success: true,
       message: "Tuition submitted for admin approval.",
